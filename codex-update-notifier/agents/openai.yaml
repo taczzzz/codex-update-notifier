@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex Update Notifier"
+  short_description: "Track Codex release notes and version changes"
+  default_prompt: "Use $codex-update-notifier to check what changed in the latest Codex update."
