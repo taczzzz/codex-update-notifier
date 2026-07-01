@@ -47,13 +47,19 @@ Behavior:
 
 Note: a skill does not run in the background by itself. To notify after every update automatically, pair the bundled script with a Codex automation, `launchd`, cron, or an update wrapper.
 
-For automatic messages in one Codex conversation, create a heartbeat automation attached to that conversation and have it run:
+For near-real-time messages in one Codex conversation, create a one-minute heartbeat automation attached to that conversation and have it run:
 
 ```bash
 python3 "${CODEX_HOME:-$HOME/.codex}/skills/codex-update-notifier/scripts/check_codex_updates.py" --quiet-no-updates
 ```
 
-With `--quiet-no-updates`, the automation only posts when new update content exists.
+Recommended heartbeat schedule:
+
+```text
+FREQ=MINUTELY;INTERVAL=1
+```
+
+With `--quiet-no-updates`, the automation only posts when new update content exists. This is polling, not true native push; expected delay is about one minute plus network/runtime time.
 
 Use the old verbose output when needed:
 

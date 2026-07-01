@@ -31,11 +31,25 @@ On the first run, the script displays the latest 3 updates and records the newes
 
 A skill only provides instructions and bundled resources after it is invoked. It cannot independently notice that Codex was updated or push a message into a conversation without another trigger.
 
-To make update content appear automatically in a Codex conversation, use a heartbeat automation attached to that conversation. The automation prompt should tell Codex to run:
+To make update content appear automatically in a Codex conversation, use a one-minute heartbeat automation attached to that conversation. This is the closest practical mode to real-time update push because the public Codex changelog exposes a readable feed, not a native push event subscription.
+
+The automation prompt should tell Codex to run:
 
 ```bash
 python3 "${CODEX_HOME:-$HOME/.codex}/skills/codex-update-notifier/scripts/check_codex_updates.py" --quiet-no-updates
 ```
+
+Use this heartbeat schedule:
+
+```text
+FREQ=MINUTELY;INTERVAL=1
+```
+
+Prompt behavior:
+
+- If the script prints nothing, do not send a user-facing reply.
+- If the script prints update content, paste the output exactly into the conversation.
+- Do not summarize away version numbers, dates, or the `更多` section.
 
 Expected behavior:
 
@@ -44,6 +58,7 @@ Expected behavior:
 - Later runs after one or more releases: the conversation receives every new changelog entry after the saved baseline.
 - Each entry shows a short first-screen summary plus a `更多` section containing localized user-facing update content.
 - Internal PR lines, compare links, and author mentions are hidden in the default feed. Use `--style full` if raw upstream changelog detail is required.
+- Worst-case notification delay is approximately one minute plus network and runtime overhead.
 
 If heartbeat automation is unavailable, use one of these fallback triggers:
 

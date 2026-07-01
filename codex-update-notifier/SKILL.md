@@ -7,7 +7,7 @@ description: Track OpenAI Codex release notes from the official Codex changelog 
 
 ## Overview
 
-Use this skill to check official Codex changelog entries and summarize newly detected updates back into the active conversation. On first run, show the latest 3 updates and create the local baseline; on later runs, show every update after the last seen entry, including multiple consecutive releases. The default output is a polished Chinese plain-text version-history feed with version, relative time, short summary, and a `更多` section containing localized user-facing details. Internal PR lines, compare links, and author mentions are hidden by default; use `--style full` when the user wants the raw upstream changelog. The skill does not run as a background service by itself; to make updates appear automatically in a conversation, create a Codex heartbeat automation attached to that conversation and have it run this skill's script.
+Use this skill to check official Codex changelog entries and summarize newly detected updates back into the active conversation. On first run, show the latest 3 updates and create the local baseline; on later runs, show every update after the last seen entry, including multiple consecutive releases. The default output is a polished Chinese plain-text version-history feed with version, relative time, short summary, and a `更多` section containing localized user-facing details. Internal PR lines, compare links, and author mentions are hidden by default; use `--style full` when the user wants the raw upstream changelog. The skill cannot subscribe to a native Codex update event, so the closest practical behavior is a one-minute Codex heartbeat automation attached to the target conversation.
 
 ## Quick Start
 
@@ -36,7 +36,18 @@ Then paste the script output in the conversation. It already includes:
 python3 scripts/check_codex_updates.py --latest 10 --no-save
 ```
 
-5. If the user asks for automatic notification after updates, explain that a skill cannot self-trigger in the background. Read `references/install-and-automation.md` and create or suggest a Codex heartbeat automation attached to the target conversation. The heartbeat should run the script with `--quiet-no-updates` and reply only when the script prints update content.
+5. If the user asks for automatic notification after updates, read `references/install-and-automation.md` and create or suggest a one-minute Codex heartbeat automation attached to the target conversation. The heartbeat should run the script with `--quiet-no-updates` and reply only when the script prints update content.
+
+## Near-Real-Time Mode
+
+Use this mode when the user wants behavior as close as possible to "Codex update event -> immediately show update content".
+
+Create a heartbeat automation on the current conversation with:
+
+- Frequency: every 1 minute
+- Prompt: run `python3 "${CODEX_HOME:-$HOME/.codex}/skills/codex-update-notifier/scripts/check_codex_updates.py" --quiet-no-updates`; if output is empty, send no user-facing message; if output is non-empty, paste it exactly into the conversation.
+
+This is polling, not true server-side push. State that the worst-case delay is approximately the heartbeat interval plus network/runtime time.
 
 ## Script Behavior
 
